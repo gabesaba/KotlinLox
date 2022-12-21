@@ -1,13 +1,22 @@
 package kotlin_lox
 
 data class Token(val type: TokenType, val lexeme: String, val literal: Literal, val line: Int) {
-
   override fun toString(): String {
     return "$type $lexeme $literal"
   }
 }
 
-class Literal
+sealed class Literal
+
+object NoValue : Literal() {
+  override fun toString(): String {
+    return "NoValue"
+  }
+}
+
+data class LoxNumber(val number: Double) : Literal()
+
+data class LoxString(val string: String) : Literal()
 
 enum class TokenType {
   // Single-character tokens.
@@ -57,9 +66,5 @@ enum class TokenType {
   WHILE,
 
   // Etc.
-  EOF
-}
-
-fun tokenize(source: String): List<Token> {
-  return emptyList()
+  EOF,
 }
