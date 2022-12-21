@@ -34,7 +34,9 @@ fun interpretFile(fileName: String) {
 
 fun run(source: String): String {
 
-  val tokens = tokenize(source)
+  val scanner = Scanner(source)
+  val tokens = scanner.scanTokens()
+
   for (token in tokens) {
     println(token)
   }
