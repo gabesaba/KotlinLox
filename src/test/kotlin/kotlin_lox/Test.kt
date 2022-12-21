@@ -4,7 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MainTest {
-    @Test fun test() {
-        assertEquals(1, 1)
-    }
+  @Test
+  fun test() {
+    assertEquals(1, 1)
+  }
 }
