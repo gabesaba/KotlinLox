@@ -77,13 +77,13 @@ class ScannerTest {
   fun testParseString() {
     val tokens = Scanner("\"Hello World\"").scanTokens()
     assertEquals(
-        Token(TokenType.STRING, "\"Hello World\"", LoxString("Hello World"), 1), tokens.first())
+        Token(STRING, "\"Hello World\"", LoxString("Hello World"), 1), tokens.first())
   }
 
   @Test
   fun testParseNumber() {
     val tokens = Scanner("3.14159").scanTokens()
-    assertEquals(Token(TokenType.NUMBER, "3.14159", LoxNumber(3.14159), 1), tokens.first())
+    assertEquals(Token(NUMBER, "3.14159", LoxNumber(3.14159), 1), tokens.first())
   }
 
   @Test
@@ -92,7 +92,7 @@ class ScannerTest {
     assertEquals(listOf(1, 3), tokens.map { it.line })
   }
 
-  fun Iterable<Token>.toTokenTypes(): Iterable<TokenType> {
+  private fun Iterable<Token>.toTokenTypes(): Iterable<TokenType> {
     return this.map { it.type }
   }
 }
