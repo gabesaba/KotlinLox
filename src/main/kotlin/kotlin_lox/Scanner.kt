@@ -9,10 +9,6 @@ private class SourceIterator(private val source: String) {
     return source[current++]
   }
 
-  fun next(): Char? {
-    return null
-  }
-
   fun peek(): Char? {
     return if (isAtEnd()) null else source[current]
   }
@@ -28,7 +24,7 @@ private class SourceIterator(private val source: String) {
     if (peek() != char) {
       return false
     }
-    current += 1
+    current++
     return true
   }
 

@@ -5,7 +5,7 @@ import kotlin.io.path.notExists
 import kotlin.io.path.readText
 import kotlin.system.exitProcess
 
-var hadError = false
+private var hadError = false
 
 fun main(args: Array<String>) {
   when (args.size) {
@@ -19,7 +19,6 @@ fun main(args: Array<String>) {
 }
 
 fun interpretFile(fileName: String) {
-  println("Handling $fileName")
   val file = Path(fileName)
   if (file.notExists()) {
     println("File doesn't exist...")
@@ -58,5 +57,5 @@ fun error(line: Int, message: String) {
 
 private fun report(line: Int, where: String, message: String) {
   hadError = true
-  println("Error on line $line, $where: $message")
+  println("[line $line] Error$where: $message")
 }
