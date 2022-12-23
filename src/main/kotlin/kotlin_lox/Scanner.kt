@@ -52,6 +52,7 @@ class Scanner(source: String) {
         tokens.add(token)
       }
     }
+    tokens.add(Token(TokenType.EOF, "", NoValue, sourceIterator.line))
     return tokens
   }
 }

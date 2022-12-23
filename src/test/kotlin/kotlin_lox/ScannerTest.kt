@@ -36,6 +36,7 @@ class ScannerTest {
             LESS_EQUAL,
             STRING,
             NUMBER,
+            EOF
         ),
         tokens.toTokenTypes())
   }
@@ -63,14 +64,15 @@ class ScannerTest {
             THIS,
             TRUE,
             VAR,
-            WHILE),
+            WHILE,
+            EOF),
         tokens.toTokenTypes())
   }
 
   @Test
   fun longestMatch() {
     val tokens = Scanner("funny fun").scanTokens()
-    assertEquals(listOf(IDENTIFIER, FUN), tokens.toTokenTypes())
+    assertEquals(listOf(IDENTIFIER, FUN, EOF), tokens.toTokenTypes())
   }
 
   @Test
@@ -89,7 +91,7 @@ class ScannerTest {
   @Test
   fun testLineNumbers() {
     val tokens = Scanner("(\n\n)").scanTokens()
-    assertEquals(listOf(1, 3), tokens.map { it.line })
+    assertEquals(listOf(1, 3, 3), tokens.map { it.line })
   }
 
   private fun Iterable<Token>.toTokenTypes(): Iterable<TokenType> {
