@@ -52,7 +52,7 @@ class Scanner(source: String) {
         tokens.add(token)
       }
     }
-    tokens.add(Token(TokenType.EOF, "", NoValue, sourceIterator.line))
+    tokens.add(Token(TokenType.EOF, "", sourceIterator.line))
     return tokens
   }
 }
@@ -102,7 +102,7 @@ private fun scanToken(source: SourceIterator): Token? {
           return null
         }
       }
-  return Token(tokenType, source.closeLexeme(), NoValue, source.line)
+  return Token(tokenType, source.closeLexeme(), source.line)
 }
 
 private fun Char.isAlpha(): Boolean {
@@ -125,9 +125,7 @@ private fun string(source: SourceIterator): Token? {
 
   source.advance()
 
-  val lexeme = source.closeLexeme()
-  val loxString = LoxString(lexeme.substring(1 until lexeme.length - 1))
-  return Token(TokenType.STRING, lexeme, loxString, source.line)
+  return Token(TokenType.STRING, source.closeLexeme(), source.line)
 }
 
 private fun number(source: SourceIterator): Token {
@@ -141,7 +139,7 @@ private fun number(source: SourceIterator): Token {
 
   val lexeme = source.closeLexeme()
 
-  return Token(TokenType.NUMBER, lexeme, LoxNumber(lexeme.toDouble()), source.line)
+  return Token(TokenType.NUMBER, lexeme, source.line)
 }
 
 private fun identifierOrKeyword(source: SourceIterator): Token {
@@ -149,7 +147,7 @@ private fun identifierOrKeyword(source: SourceIterator): Token {
 
   val lexeme = source.closeLexeme()
   val tokenType = resolveIdentifierOrKeyword(lexeme)
-  return Token(tokenType, lexeme, NoValue, source.line)
+  return Token(tokenType, lexeme, source.line)
 }
 
 private fun resolveIdentifierOrKeyword(lexeme: String): TokenType {
