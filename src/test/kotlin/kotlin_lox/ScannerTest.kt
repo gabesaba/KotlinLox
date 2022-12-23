@@ -7,7 +7,7 @@ import kotlin_lox.TokenType.*
 class ScannerTest {
   @Test
   fun testParseLeftParen() {
-    assertEquals(Token(LEFT_PAREN, "(", NoValue, 1), Scanner("(").scanTokens().first())
+    assertEquals(Token(LEFT_PAREN, "(", 1), Scanner("(").scanTokens().first())
   }
 
   @Test
@@ -79,13 +79,13 @@ class ScannerTest {
   fun testParseString() {
     val tokens = Scanner("\"Hello World\"").scanTokens()
     assertEquals(
-        Token(STRING, "\"Hello World\"", LoxString("Hello World"), 1), tokens.first())
+        Token(STRING, "\"Hello World\"", 1), tokens.first())
   }
 
   @Test
   fun testParseNumber() {
     val tokens = Scanner("3.14159").scanTokens()
-    assertEquals(Token(NUMBER, "3.14159", LoxNumber(3.14159), 1), tokens.first())
+    assertEquals(Token(NUMBER, "3.14159", 1), tokens.first())
   }
 
   @Test
