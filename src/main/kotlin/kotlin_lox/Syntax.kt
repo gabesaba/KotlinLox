@@ -5,6 +5,7 @@ interface Stmt {
     fun visit(print: Print)
     fun visit(expression: Expression)
     fun visit(v: Var)
+    fun visit(block: Block)
   }
 
   fun accept(visitor: Visitor)
@@ -23,6 +24,12 @@ interface Stmt {
 
   class Var(val identifier: String, val expr: Expr) : Stmt {
     override fun accept(visitor: Stmt.Visitor) {
+      visitor.visit(this)
+    }
+  }
+
+  class Block(val statements: List<Stmt>) : Stmt {
+    override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
   }
@@ -45,7 +52,7 @@ interface Expr {
 
   fun accept(visitor: Visitor): Literal
 
-  class Assign(val variable: Variable, val right: Expr): Expr {
+  class Assign(val variable: Variable, val right: Expr) : Expr {
     override fun accept(visitor: Visitor): Literal {
       return visitor.visit(this)
     }
