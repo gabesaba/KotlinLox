@@ -1,21 +1,43 @@
 package kotlin_lox
 
-interface Visitor {
-  fun visit(expr: Literal): Literal
 
-  fun visit(unary: Unary): Literal
+interface Stmt {
+  interface Visitor {
+    fun visit(print: Print)
+    fun visit(expression: Expression)
+  }
 
-  fun visit(binary: Binary): Literal
+   fun accept(visitor: Visitor)
+}
 
-  fun visit(grouping: Grouping): Literal
+class Print(val expr: Expr): Stmt {
+  override fun accept(visitor: Stmt.Visitor) {
+    visitor.visit(this)
+  }
+}
+
+class Expression(val expr: Expr): Stmt {
+  override fun accept(visitor: Stmt.Visitor) {
+    visitor.visit(this)
+  }
 }
 
 interface Expr {
+  interface Visitor {
+    fun visit(expr: Literal): Literal
+
+    fun visit(unary: Unary): Literal
+
+    fun visit(binary: Binary): Literal
+
+    fun visit(grouping: Grouping): Literal
+  }
+
   fun accept(visitor: Visitor): Literal
 }
 
 sealed class Literal : Expr {
-  override fun accept(visitor: Visitor): Literal {
+  override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
 }
@@ -54,19 +76,19 @@ fun parsePrimary(token: Token): Literal {
 }
 
 data class Unary(val operator: Token, val operand: Expr) : Expr {
-  override fun accept(visitor: Visitor): Literal {
+  override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
 }
 
 data class Binary(val operator: Token, val left: Expr, val right: Expr) : Expr {
-  override fun accept(visitor: Visitor): Literal {
+  override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
 }
 
 data class Grouping(val expr: Expr) : Expr {
-  override fun accept(visitor: Visitor): Literal {
+  override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
 }

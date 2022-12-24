@@ -7,7 +7,15 @@ object Failure: ParseResult
 class Parser(private val tokens: List<Token>) {
   private var current = 0
 
-  fun parse(): ParseResult {
+  fun parse(): List<Stmt> {
+    val statements = mutableListOf<Stmt>()
+    while (!isAtEnd()) {
+      statements.add(statement())
+    }
+    return statements
+  }
+
+  fun parseExpression(): ParseResult {
     return try {
       // TODO: Make sure all tokens consumed?
       Success(expression())
@@ -57,6 +65,26 @@ class Parser(private val tokens: List<Token>) {
       return advance()
     }
     throw reportParseError(previous(), message)
+  }
+
+  private fun statement(): Stmt {
+    if (match(TokenType.PRINT)) {
+      return printStmt()
+    }
+
+    return expressionStatement()
+  }
+
+  private fun expressionStatement(): Expression {
+    val expr = expression();
+    consume(TokenType.SEMICOLON, "Expect ';' after value.")
+    return Expression(expr)
+  }
+
+  private fun printStmt(): Print {
+    val expr = expression();
+    consume(TokenType.SEMICOLON, "Expect ';' after value.")
+    return Print(expr)
   }
 
   private fun expression(): Expr {

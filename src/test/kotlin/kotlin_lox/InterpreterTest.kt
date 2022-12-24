@@ -170,7 +170,7 @@ class InterpreterTest {
 
     private fun interpret(code: String): Literal? {
         val tokens = Scanner(code).scanTokens()
-        val parse = Parser(tokens).parse() as Success
+        val parse = Parser(tokens).parseExpression() as Success
         return Interpreter().interpret(parse.parseTree)
     }
 }

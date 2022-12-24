@@ -1,6 +1,16 @@
 package kotlin_lox
 
-class Interpreter : Visitor {
+class Interpreter : Expr.Visitor, Stmt.Visitor {
+  fun interpret(statements: List<Stmt>) {
+    for (statement in statements) {
+      try {
+        execute(statement)
+      } catch (error: RuntimeError) {
+        runtimeError(error)
+      }
+    }
+  }
+
   fun interpret(expr: Expr): Literal? {
     return try {
       evaluate(expr)
@@ -8,6 +18,10 @@ class Interpreter : Visitor {
       runtimeError(error)
       null
     }
+  }
+
+  private fun execute(stmt: Stmt) {
+    stmt.accept(this)
   }
 
   private fun evaluate(expr: Expr): Literal {
@@ -73,6 +87,14 @@ class Interpreter : Visitor {
 
   override fun visit(grouping: Grouping): Literal {
     return grouping.expr.accept(this)
+  }
+
+  override fun visit(stmt: Print) {
+    println(evaluate(stmt.expr))
+  }
+
+  override fun visit(stmt: Expression) {
+    evaluate(stmt.expr)
   }
 }
 
