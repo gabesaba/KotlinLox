@@ -93,13 +93,15 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
 
   override fun visit(variable: Variable): Literal {
     return env.get(variable.identifier)
-        ?: throw RuntimeError(
-            variable.token, "Cannot resolve identifier ${variable.identifier}")
+        ?: throw RuntimeError(variable.token, "Cannot resolve identifier ${variable.identifier}")
   }
 
   override fun visit(assign: Expr.Assign): Literal {
     val value = evaluate(assign.right)
-    env.define(assign.variable.identifier, value)
+    val success = env.assign(assign.variable.identifier, value)
+    if (!success) {
+      throw RuntimeError(assign.variable.token, "Undefined variable ${assign.variable.identifier}.")
+    }
     return value
   }
 
