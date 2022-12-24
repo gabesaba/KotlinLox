@@ -1,6 +1,8 @@
 package kotlin_lox
 
 class Interpreter : Expr.Visitor, Stmt.Visitor {
+  private val globalState = mutableMapOf<String, Literal>()
+
   fun interpret(statements: List<Stmt>) {
     for (statement in statements) {
       try {
@@ -89,12 +91,22 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
     return grouping.expr.accept(this)
   }
 
+  override fun visit(identifier: Identifier): Literal {
+    return globalState[identifier.identifier]
+        ?: throw RuntimeError(
+            identifier.token, "Cannot resolve identifier ${identifier.identifier}")
+  }
+
   override fun visit(stmt: Print) {
     println(evaluate(stmt.expr))
   }
 
   override fun visit(stmt: Expression) {
     evaluate(stmt.expr)
+  }
+
+  override fun visit(assign: Assign) {
+    globalState[assign.identifier] = evaluate(assign.expr)
   }
 }
 

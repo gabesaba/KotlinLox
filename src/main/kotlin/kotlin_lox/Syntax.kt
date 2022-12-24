@@ -1,22 +1,28 @@
 package kotlin_lox
 
-
 interface Stmt {
   interface Visitor {
     fun visit(print: Print)
     fun visit(expression: Expression)
+    fun visit(assign: Assign)
   }
 
-   fun accept(visitor: Visitor)
+  fun accept(visitor: Visitor)
 }
 
-class Print(val expr: Expr): Stmt {
+class Print(val expr: Expr) : Stmt {
   override fun accept(visitor: Stmt.Visitor) {
     visitor.visit(this)
   }
 }
 
-class Expression(val expr: Expr): Stmt {
+class Expression(val expr: Expr) : Stmt {
+  override fun accept(visitor: Stmt.Visitor) {
+    visitor.visit(this)
+  }
+}
+
+class Assign(val identifier: String, val expr: Expr) : Stmt {
   override fun accept(visitor: Stmt.Visitor) {
     visitor.visit(this)
   }
@@ -31,6 +37,8 @@ interface Expr {
     fun visit(binary: Binary): Literal
 
     fun visit(grouping: Grouping): Literal
+
+    fun visit(identifier: Identifier): Literal
   }
 
   fun accept(visitor: Visitor): Literal
@@ -91,4 +99,12 @@ data class Grouping(val expr: Expr) : Expr {
   override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
+}
+
+data class Identifier(val token: Token) : Expr {
+  override fun accept(visitor: Expr.Visitor): Literal {
+    return visitor.visit(this)
+  }
+
+  val identifier = token.lexeme
 }
