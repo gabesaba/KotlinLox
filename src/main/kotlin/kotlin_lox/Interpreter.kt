@@ -1,7 +1,7 @@
 package kotlin_lox
 
 class Interpreter : Expr.Visitor, Stmt.Visitor {
-  private val env = Environment()
+  private var env = Environment()
 
   fun interpret(statements: List<Stmt>) {
     for (statement in statements) {
@@ -115,6 +115,18 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
 
   override fun visit(v: Stmt.Var) {
     env.define(v.identifier, evaluate(v.expr))
+  }
+
+  override fun visit(block: Stmt.Block) {
+    val enclosingEnv = env
+    try {
+      env = Environment(enclosingEnv)
+      for (statement in block.statements) {
+        execute(statement)
+      }
+    } finally {
+      env = enclosingEnv
+    }
   }
 }
 
