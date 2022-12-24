@@ -7,6 +7,7 @@ import kotlin.system.exitProcess
 
 private var hadError = false
 private var hadRuntimeError = false
+private val interpreter = Interpreter()
 
 fun main(args: Array<String>) {
   when (args.size) {
@@ -41,7 +42,6 @@ fun run(source: String) {
   val parser = Parser(tokens)
 
   val statements = parser.parse()
-  val interpreter = Interpreter()
 
   if (hadError) return
 

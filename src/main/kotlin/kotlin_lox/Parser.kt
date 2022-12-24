@@ -1,8 +1,10 @@
 package kotlin_lox
 
 sealed interface ParseResult
-class Success(val parseTree: Expr): ParseResult
-object Failure: ParseResult
+
+class Success(val parseTree: Expr) : ParseResult
+
+object Failure : ParseResult
 
 class Parser(private val tokens: List<Token>) {
   private var current = 0
@@ -72,19 +74,32 @@ class Parser(private val tokens: List<Token>) {
       return printStmt()
     }
 
+    if (match(TokenType.VAR)) {
+      return assignStmt()
+    }
+
     return expressionStatement()
   }
 
   private fun expressionStatement(): Expression {
-    val expr = expression();
+    val expr = expression()
     consume(TokenType.SEMICOLON, "Expect ';' after value.")
     return Expression(expr)
   }
 
   private fun printStmt(): Print {
-    val expr = expression();
+    val expr = expression()
     consume(TokenType.SEMICOLON, "Expect ';' after value.")
     return Print(expr)
+  }
+
+  private fun assignStmt(): Assign {
+    consume(TokenType.IDENTIFIER, "Expecting identifier after var.")
+    val identifier = previous()
+    consume(TokenType.EQUAL, "Expect '=' after identifier.")
+    val expr = expression()
+    consume(TokenType.SEMICOLON, "Expect ';' after value.")
+    return Assign(identifier.lexeme, expr)
   }
 
   private fun expression(): Expr {
@@ -147,6 +162,9 @@ class Parser(private val tokens: List<Token>) {
       val expr = expression()
       consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
       return Grouping(expr)
+    }
+    if (match(TokenType.IDENTIFIER)) {
+      return Identifier(previous())
     }
     throw reportParseError(peek(), "Expected expression.")
   }
