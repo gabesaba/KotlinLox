@@ -129,6 +129,14 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
       env = enclosingEnv
     }
   }
+
+  override fun visit(ifStmt: Stmt.If) {
+    when (evaluate(ifStmt.condition)) {
+      LoxBoolean(true) -> execute(ifStmt.thenBranch)
+      LoxBoolean(false) -> execute(ifStmt.elseBranch)
+      else -> throw RuntimeError(ifStmt.token, "Expression must evaluate to boolean.")
+    }
+  }
 }
 
 // Convert function of (Double, Double) -> Double to (LoxNumber, LoxNumber) -> LoxNumber
