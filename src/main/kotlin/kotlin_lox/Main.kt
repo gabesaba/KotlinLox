@@ -40,13 +40,12 @@ fun run(source: String) {
   val tokens = scanner.scanTokens()
   val parser = Parser(tokens)
 
-  val parseResult = parser.parse()
-  if (parseResult !is Success) {
-    println("Parse failed.")
-    return
-  }
+  val statements = parser.parse()
   val interpreter = Interpreter()
-  interpreter.interpret(parseResult.parseTree)
+
+  if (hadError) return
+
+  interpreter.interpret(statements)
 }
 
 fun runPrompt() {
