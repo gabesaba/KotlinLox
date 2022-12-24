@@ -12,7 +12,7 @@ class Parser(private val tokens: List<Token>) {
   fun parse(): List<Stmt> {
     val statements = mutableListOf<Stmt>()
     while (!isAtEnd()) {
-      statements.add(statement())
+      statements.add(declaration())
     }
     return statements
   }
@@ -69,37 +69,41 @@ class Parser(private val tokens: List<Token>) {
     throw reportParseError(previous(), message)
   }
 
+  private fun declaration(): Stmt {
+    if (match(TokenType.VAR)) {
+      return varDeclaration()
+    }
+    return statement()
+  }
+
   private fun statement(): Stmt {
     if (match(TokenType.PRINT)) {
       return printStmt()
     }
 
-    if (match(TokenType.VAR)) {
-      return assignStmt()
-    }
-
     return expressionStatement()
   }
 
-  private fun expressionStatement(): Expression {
+  private fun expressionStatement(): Stmt.Expression {
     val expr = expression()
     consume(TokenType.SEMICOLON, "Expect ';' after value.")
-    return Expression(expr)
+    return Stmt.Expression(expr)
   }
 
-  private fun printStmt(): Print {
+  private fun printStmt(): Stmt.Print {
     val expr = expression()
     consume(TokenType.SEMICOLON, "Expect ';' after value.")
-    return Print(expr)
+    return Stmt.Print(expr)
   }
 
-  private fun assignStmt(): Assign {
-    consume(TokenType.IDENTIFIER, "Expecting identifier after var.")
-    val identifier = previous()
-    consume(TokenType.EQUAL, "Expect '=' after identifier.")
-    val expr = expression()
-    consume(TokenType.SEMICOLON, "Expect ';' after value.")
-    return Assign(identifier.lexeme, expr)
+  private fun varDeclaration(): Stmt.Var {
+    val identifier = consume(TokenType.IDENTIFIER, "Expect variable name.")
+    var initializer: Expr = LoxNil
+    if (match(TokenType.EQUAL)) {
+      initializer = expression()
+    }
+    consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
+    return Stmt.Var(identifier.lexeme, initializer)
   }
 
   private fun expression(): Expr {
@@ -164,7 +168,7 @@ class Parser(private val tokens: List<Token>) {
       return Grouping(expr)
     }
     if (match(TokenType.IDENTIFIER)) {
-      return Identifier(previous())
+      return Variable(previous())
     }
     throw reportParseError(peek(), "Expected expression.")
   }
