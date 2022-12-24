@@ -4,27 +4,27 @@ interface Stmt {
   interface Visitor {
     fun visit(print: Print)
     fun visit(expression: Expression)
-    fun visit(assign: Assign)
+    fun visit(v: Var)
   }
 
   fun accept(visitor: Visitor)
-}
 
-class Print(val expr: Expr) : Stmt {
-  override fun accept(visitor: Stmt.Visitor) {
-    visitor.visit(this)
+  class Print(val expr: Expr) : Stmt {
+    override fun accept(visitor: Stmt.Visitor) {
+      visitor.visit(this)
+    }
   }
-}
 
-class Expression(val expr: Expr) : Stmt {
-  override fun accept(visitor: Stmt.Visitor) {
-    visitor.visit(this)
+  class Expression(val expr: Expr) : Stmt {
+    override fun accept(visitor: Stmt.Visitor) {
+      visitor.visit(this)
+    }
   }
-}
 
-class Assign(val identifier: String, val expr: Expr) : Stmt {
-  override fun accept(visitor: Stmt.Visitor) {
-    visitor.visit(this)
+  class Var(val identifier: String, val expr: Expr) : Stmt {
+    override fun accept(visitor: Stmt.Visitor) {
+      visitor.visit(this)
+    }
   }
 }
 
@@ -38,7 +38,7 @@ interface Expr {
 
     fun visit(grouping: Grouping): Literal
 
-    fun visit(identifier: Identifier): Literal
+    fun visit(variable: Variable): Literal
   }
 
   fun accept(visitor: Visitor): Literal
@@ -101,7 +101,7 @@ data class Grouping(val expr: Expr) : Expr {
   }
 }
 
-data class Identifier(val token: Token) : Expr {
+data class Variable(val token: Token) : Expr {
   override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }

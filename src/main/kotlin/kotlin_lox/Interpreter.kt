@@ -1,7 +1,7 @@
 package kotlin_lox
 
 class Interpreter : Expr.Visitor, Stmt.Visitor {
-  private val globalState = mutableMapOf<String, Literal>()
+  private val env = Environment()
 
   fun interpret(statements: List<Stmt>) {
     for (statement in statements) {
@@ -91,22 +91,22 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
     return grouping.expr.accept(this)
   }
 
-  override fun visit(identifier: Identifier): Literal {
-    return globalState[identifier.identifier]
+  override fun visit(variable: Variable): Literal {
+    return env.get(variable.identifier)
         ?: throw RuntimeError(
-            identifier.token, "Cannot resolve identifier ${identifier.identifier}")
+            variable.token, "Cannot resolve identifier ${variable.identifier}")
   }
 
-  override fun visit(stmt: Print) {
-    println(evaluate(stmt.expr))
+  override fun visit(print: Stmt.Print) {
+    println(evaluate(print.expr))
   }
 
-  override fun visit(stmt: Expression) {
-    evaluate(stmt.expr)
+  override fun visit(expression: Stmt.Expression) {
+    evaluate(expression.expr)
   }
 
-  override fun visit(assign: Assign) {
-    globalState[assign.identifier] = evaluate(assign.expr)
+  override fun visit(v: Stmt.Var) {
+    env.define(v.identifier, evaluate(v.expr))
   }
 }
 
