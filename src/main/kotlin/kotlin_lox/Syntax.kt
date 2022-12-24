@@ -6,6 +6,7 @@ interface Stmt {
     fun visit(expression: Expression)
     fun visit(v: Var)
     fun visit(block: Block)
+    fun visit(ifStmt: If)
   }
 
   fun accept(visitor: Visitor)
@@ -29,6 +30,13 @@ interface Stmt {
   }
 
   class Block(val statements: List<Stmt>) : Stmt {
+    override fun accept(visitor: Visitor) {
+      visitor.visit(this)
+    }
+  }
+
+  class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt, val token: Token) :
+      Stmt {
     override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }

@@ -87,6 +87,9 @@ class Parser(private val tokens: List<Token>) {
     if (match(TokenType.LEFT_BRACE)) {
       return block()
     }
+    if (match(TokenType.IF)) {
+      return ifStatement()
+    }
 
     return expressionStatement()
   }
@@ -112,6 +115,21 @@ class Parser(private val tokens: List<Token>) {
 
     consume(TokenType.RIGHT_BRACE, "Expect '} after block.")
     return Stmt.Block(statements)
+  }
+
+  private fun ifStatement(): Stmt.If {
+    val ifToken = previous()
+    consume(TokenType.LEFT_PAREN, "Expect '(' after if.")
+    val expr = expression()
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after if statement's expression")
+
+    val thenBlock = statement()
+    val elseBlock = if (match(TokenType.ELSE)) {
+      statement()
+    } else {
+      Stmt.Expression(LoxNil)
+    }
+    return Stmt.If(expr, thenBlock, elseBlock, ifToken)
   }
 
   private fun varDeclaration(): Stmt.Var {
