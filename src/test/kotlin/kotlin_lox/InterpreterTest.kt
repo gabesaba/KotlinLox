@@ -6,6 +6,9 @@ import kotlin.test.assertNull
 
 class InterpreterTest {
 
+  private val env = Environment()
+  private val interpreter = Interpreter(env)
+
   @Test
   fun testAddition() {
     assertEquals(eval("1 + 2 + 3"), LoxNumber(6.0))
@@ -172,13 +175,73 @@ class InterpreterTest {
     }
   }
 
+  @Test
+  fun testIfStatement() {
+    interpret(
+        """
+      var test_output = 0;
+      if (true) {
+        test_output = 1;
+      }
+      """)
+
+    assertEquals(LoxNumber(1.0), getTestOutput())
+  }
+
+  @Test
+  fun testIfStatementNotExecuted() {
+    interpret(
+        """
+      var test_output = 0;
+      if (false) {
+        test_output = 1;
+      }
+      """)
+
+    assertEquals(LoxNumber(0.0), getTestOutput())
+  }
+
+  @Test
+  fun testIfStatementWithElseBranch() {
+    interpret(
+        """
+      var test_output = 0;
+      if (true) {
+        test_output = 1;
+      } else {
+        test_output = 2;
+      }
+      """)
+
+    assertEquals(LoxNumber(1.0), getTestOutput())
+  }
+
+  @Test
+  fun testElseBranchExecuted() {
+    interpret(
+        """
+      var test_output = 0;
+      if (false) {
+        test_output = 1;
+      } else {
+        test_output = 2;
+      }
+      """)
+
+    assertEquals(LoxNumber(2.0), getTestOutput())
+  }
+
+  private fun getTestOutput(): Literal? {
+    return env.get("test_output")
+  }
+  private fun interpret(code: String) {
+    interpreter.interpret(Parser((Scanner(code).scanTokens())).parse())
+  }
+
   private fun eval(expression: String): Literal? {
-    val testKey = "test_output"
-    val tokens = Scanner("var $testKey = $expression;").scanTokens()
+    val tokens = Scanner("var test_output = $expression;").scanTokens()
     val statements = Parser(tokens).parse()
-    val env = Environment()
-    val interpreter = Interpreter(env)
     interpreter.interpret(statements)
-    return env.get(testKey)
+    return getTestOutput()
   }
 }
