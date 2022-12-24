@@ -6,6 +6,7 @@ import kotlin.io.path.readText
 import kotlin.system.exitProcess
 
 private var hadError = false
+private var hadRuntimeError = false
 
 fun main(args: Array<String>) {
   when (args.size) {
@@ -29,6 +30,9 @@ fun interpretFile(fileName: String) {
   if (hadError) {
     exitProcess(65)
   }
+  if (hadRuntimeError) {
+    exitProcess(70)
+  }
 }
 
 fun run(source: String) {
@@ -36,10 +40,13 @@ fun run(source: String) {
   val tokens = scanner.scanTokens()
   val parser = Parser(tokens)
 
-  when (val parseResult = parser.parse()) {
-    is Success -> println(parseResult.parseTree)
-    is Failure -> println("Parse failed.")
+  val parseResult = parser.parse()
+  if (parseResult !is Success) {
+    println("Parse failed.")
+    return
   }
+  val interpreter = Interpreter()
+  interpreter.interpret(parseResult.parseTree)
 }
 
 fun runPrompt() {
@@ -61,6 +68,11 @@ fun error(token: Token, message: String) {
   } else {
     report(token.line, " at ${token.lexeme}", message)
   }
+}
+
+fun runtimeError(error: RuntimeError) {
+  hadRuntimeError = true
+  error(error.token.line, error.message)
 }
 
 private fun report(line: Int, where: String, message: String) {
