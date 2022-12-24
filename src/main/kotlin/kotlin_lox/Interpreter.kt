@@ -1,7 +1,6 @@
 package kotlin_lox
 
-class Interpreter : Expr.Visitor, Stmt.Visitor {
-  private var env = Environment()
+class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, Stmt.Visitor {
 
   fun interpret(statements: List<Stmt>) {
     for (statement in statements) {
@@ -11,15 +10,6 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
         runtimeError(error)
         return
       }
-    }
-  }
-
-  fun interpret(expr: Expr): Literal? {
-    return try {
-      evaluate(expr)
-    } catch (error: RuntimeError) {
-      runtimeError(error)
-      null
     }
   }
 
