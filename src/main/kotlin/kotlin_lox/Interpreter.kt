@@ -9,6 +9,7 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
         execute(statement)
       } catch (error: RuntimeError) {
         runtimeError(error)
+        return
       }
     }
   }
