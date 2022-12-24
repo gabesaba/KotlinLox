@@ -97,6 +97,12 @@ class Interpreter : Expr.Visitor, Stmt.Visitor {
             variable.token, "Cannot resolve identifier ${variable.identifier}")
   }
 
+  override fun visit(assign: Expr.Assign): Literal {
+    val value = evaluate(assign.right)
+    env.define(assign.variable.identifier, value)
+    return value
+  }
+
   override fun visit(print: Stmt.Print) {
     println(evaluate(print.expr))
   }

@@ -39,9 +39,17 @@ interface Expr {
     fun visit(grouping: Grouping): Literal
 
     fun visit(variable: Variable): Literal
+
+    fun visit(assign: Assign): Literal
   }
 
   fun accept(visitor: Visitor): Literal
+
+  class Assign(val variable: Variable, val right: Expr): Expr {
+    override fun accept(visitor: Visitor): Literal {
+      return visitor.visit(this)
+    }
+  }
 }
 
 sealed class Literal : Expr {
