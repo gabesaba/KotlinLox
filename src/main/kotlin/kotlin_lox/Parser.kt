@@ -12,7 +12,11 @@ class Parser(private val tokens: List<Token>) {
   fun parse(): List<Stmt> {
     val statements = mutableListOf<Stmt>()
     while (!isAtEnd()) {
-      statements.add(declaration())
+      try {
+        statements.add(declaration())
+      } catch (e: ParseError) {
+        return emptyList()
+      }
     }
     return statements
   }
