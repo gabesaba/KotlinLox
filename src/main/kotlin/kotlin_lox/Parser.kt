@@ -9,6 +9,7 @@ class Parser(private val tokens: List<Token>) {
 
   fun parse(): ParseResult {
     return try {
+      // TODO: Make sure all tokens consumed?
       Success(expression())
     } catch (parseError: ParseError) {
       Failure
