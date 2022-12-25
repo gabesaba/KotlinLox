@@ -7,6 +7,7 @@ interface Stmt {
     fun visit(v: Var)
     fun visit(block: Block)
     fun visit(ifStmt: If)
+    fun visit(whileStmt: While)
   }
 
   fun accept(visitor: Visitor)
@@ -37,6 +38,12 @@ interface Stmt {
 
   class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt, val token: Token) :
       Stmt {
+    override fun accept(visitor: Visitor) {
+      visitor.visit(this)
+    }
+  }
+
+  class While(val condition: Expr, val block: Stmt, val token: Token) : Stmt {
     override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }

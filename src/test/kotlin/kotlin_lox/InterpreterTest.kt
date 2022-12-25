@@ -279,6 +279,34 @@ class InterpreterTest {
     assertEquals(LoxBoolean(true), getTestOutput())
   }
 
+  @Test
+  fun testWhile() {
+    interpret(
+        """
+      var test_output = 0;
+      while (test_output < 10) {
+        test_output = test_output + 1;
+      }
+    """
+            .trimIndent())
+
+    assertEquals(LoxNumber(10.0), getTestOutput())
+  }
+
+  @Test
+  fun testWhileDoesntExecute() {
+    interpret(
+        """
+      var test_output = false;
+      while (false) {
+        test_output = true;
+      }
+    """
+            .trimIndent())
+
+    assertEquals(LoxBoolean(false), getTestOutput())
+  }
+
   private fun getTestOutput(): Literal? {
     return env.get("test_output")
   }
