@@ -90,6 +90,9 @@ class Parser(private val tokens: List<Token>) {
     if (match(TokenType.IF)) {
       return ifStatement()
     }
+    if (match(TokenType.WHILE)) {
+      return whileStatement()
+    }
 
     return expressionStatement()
   }
@@ -124,12 +127,23 @@ class Parser(private val tokens: List<Token>) {
     consume(TokenType.RIGHT_PAREN, "Expect ')' after if statement's expression")
 
     val thenBlock = statement()
-    val elseBlock = if (match(TokenType.ELSE)) {
-      statement()
-    } else {
-      Stmt.Expression(LoxNil)
-    }
+    val elseBlock =
+        if (match(TokenType.ELSE)) {
+          statement()
+        } else {
+          Stmt.Expression(LoxNil)
+        }
     return Stmt.If(expr, thenBlock, elseBlock, ifToken)
+  }
+
+  private fun whileStatement(): Stmt.While {
+    val whileToken = previous()
+    consume(TokenType.LEFT_PAREN, "Expect '(' after while.")
+    val expr = expression()
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after while statement's expression")
+
+    val thenBlock = statement()
+    return Stmt.While(expr, thenBlock, whileToken)
   }
 
   private fun varDeclaration(): Stmt.Var {

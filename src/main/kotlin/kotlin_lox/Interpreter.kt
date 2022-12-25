@@ -132,11 +132,30 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
   }
 
   override fun visit(ifStmt: Stmt.If) {
-    when (evaluate(ifStmt.condition)) {
-      LoxBoolean(true) -> execute(ifStmt.thenBranch)
-      LoxBoolean(false) -> execute(ifStmt.elseBranch)
-      else -> throw RuntimeError(ifStmt.token, "Expression must evaluate to boolean.")
+    val truthinessFunction = makeCheckTruthiness(ifStmt.token)
+    if (truthinessFunction(evaluate(ifStmt.condition))) {
+      execute(ifStmt.thenBranch)
+    } else {
+      execute(ifStmt.elseBranch)
     }
+  }
+
+  override fun visit(whileStmt: Stmt.While) {
+    val truthinessFunction = makeCheckTruthiness(whileStmt.token)
+    while (truthinessFunction(evaluate(whileStmt.condition))) {
+      execute(whileStmt.block)
+    }
+  }
+
+  private fun makeCheckTruthiness(token: Token): (Literal) -> Boolean {
+    fun checkTruthiness(literal: Literal): Boolean {
+      return when (literal) {
+        LoxBoolean(true) -> true
+        LoxBoolean(false) -> false
+        else -> throw RuntimeError(token, "Expect boolean in condition.")
+      }
+    }
+    return ::checkTruthiness
   }
 }
 
