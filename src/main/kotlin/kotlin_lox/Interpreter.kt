@@ -96,6 +96,17 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
     return value
   }
 
+  override fun visit(logicalExpression: LogicalExpression): Literal {
+    val left = evaluate(logicalExpression.left)
+    when (Pair(left, logicalExpression.type.type)) {
+      Pair(LoxBoolean(true), TokenType.OR) -> return left
+      Pair(LoxBoolean(false), TokenType.OR) -> return evaluate(logicalExpression.right)
+      Pair(LoxBoolean(true), TokenType.AND) -> return evaluate(logicalExpression.right)
+      Pair(LoxBoolean(false), TokenType.AND) -> return left
+      else -> throw RuntimeError(logicalExpression.type, "Expected boolean on LHS of and/or.")
+    }
+  }
+
   override fun visit(print: Stmt.Print) {
     println(evaluate(print.expr))
   }

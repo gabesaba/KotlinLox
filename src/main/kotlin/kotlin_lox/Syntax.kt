@@ -56,6 +56,8 @@ interface Expr {
     fun visit(variable: Variable): Literal
 
     fun visit(assign: Assign): Literal
+
+    fun visit(logicalExpression: LogicalExpression): Literal
   }
 
   fun accept(visitor: Visitor): Literal
@@ -130,4 +132,11 @@ data class Variable(val token: Token) : Expr {
   }
 
   val identifier = token.lexeme
+}
+
+class LogicalExpression(val left: Expr, val type: Token, val right: Expr) : Expr {
+
+  override fun accept(visitor: Expr.Visitor): Literal {
+    return visitor.visit(this)
+  }
 }

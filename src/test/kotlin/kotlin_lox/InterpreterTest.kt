@@ -231,6 +231,54 @@ class InterpreterTest {
     assertEquals(LoxNumber(2.0), getTestOutput())
   }
 
+  @Test
+  fun testShortCircuitAnd() {
+    interpret(
+        """
+      var test_output = false;
+      false and test_output = true;
+    """
+            .trimIndent())
+
+    assertEquals(LoxBoolean(false), getTestOutput())
+  }
+
+  @Test
+  fun testSideEffectAnd() {
+    interpret(
+        """
+      var test_output = false;
+      true and test_output = true;
+    """
+            .trimIndent())
+
+    assertEquals(LoxBoolean(true), getTestOutput())
+  }
+
+  @Test
+  fun testShortCircuitOr() {
+    interpret(
+        """
+      var test_output = false;
+      true or test_output = true;
+    """
+            .trimIndent())
+
+    assertEquals(LoxBoolean(false), getTestOutput())
+  }
+
+  @Test
+  fun testSideEffectOr() {
+    interpret(
+        """
+      var test_output = false;
+      false or test_output = true;
+    """
+            .trimIndent())
+
+    assertEquals(LoxBoolean(true), getTestOutput())
+  }
+
   private fun getTestOutput(): Literal? {
     return env.get("test_output")
   }
