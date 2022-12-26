@@ -93,6 +93,9 @@ class Parser(private val tokens: List<Token>) {
     if (match(TokenType.WHILE)) {
       return whileStatement()
     }
+    if (match(TokenType.FOR)) {
+      return forLoop()
+    }
 
     return expressionStatement()
   }
@@ -144,6 +147,38 @@ class Parser(private val tokens: List<Token>) {
 
     val thenBlock = statement()
     return Stmt.While(expr, thenBlock, whileToken)
+  }
+
+  private fun forLoop(): Stmt {
+    val forToken = previous()
+    consume(TokenType.LEFT_PAREN, "Expect '(' after for.")
+    val initializer =
+        if (match(TokenType.SEMICOLON)) {
+          Stmt.Expression(LoxNil)
+        } else if (match(TokenType.VAR)) {
+          varDeclaration()
+        } else {
+          expressionStatement()
+        }
+    val condition =
+        if (check(TokenType.SEMICOLON)) {
+          LoxBoolean(true)
+        } else {
+          expression()
+        }
+    consume(TokenType.SEMICOLON, "Expect ';' after loop condition.")
+    val increment =
+        if (check(TokenType.RIGHT_PAREN)) {
+          LoxNil
+        } else {
+          expression()
+        }
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.")
+
+    // The body of the for-loop is executed, then the increment.
+    val body = Stmt.Block(listOf(statement(), Stmt.Expression(increment)))
+
+    return Stmt.Block(listOf(initializer, Stmt.While(condition, body, forToken)))
   }
 
   private fun varDeclaration(): Stmt.Var {

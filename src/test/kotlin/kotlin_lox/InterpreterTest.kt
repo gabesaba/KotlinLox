@@ -307,6 +307,69 @@ class InterpreterTest {
     assertEquals(LoxBoolean(false), getTestOutput())
   }
 
+  @Test
+  fun testForLoop() {
+    interpret(
+        """
+      var test_output = 0;
+
+      for (var i = 0; i < 10; i = i + 1) {
+        test_output = test_output + i;
+      }
+    """
+            .trimIndent())
+
+    assertEquals(LoxNumber(45.0), getTestOutput())
+  }
+
+  @Test
+  fun testForLoopWithoutInitializer() {
+    interpret(
+        """
+      var test_output = 0;
+      var i = 0;
+
+      for (; i < 10; i = i + 1) {
+        test_output = test_output + i;
+      }
+    """
+            .trimIndent())
+
+    assertEquals(LoxNumber(45.0), getTestOutput())
+  }
+
+  @Test
+  fun testForLoopWithoutIncrement() {
+    interpret(
+        """
+      var test_output = 0;
+
+      for (var i = 0; i < 10;) {
+        test_output = test_output + i;
+        i = i + 1;
+      }
+    """
+            .trimIndent())
+
+    assertEquals(LoxNumber(45.0), getTestOutput())
+  }
+
+  @Test
+  fun testForLoopInitializer() {
+    interpret(
+        """
+      var test_output = 0;
+      var i = "not a number!";
+
+      for (i = 0; i < 10; i = i + 1) {
+        test_output = test_output + i;
+      }
+    """
+            .trimIndent())
+
+    assertEquals(LoxNumber(45.0), getTestOutput())
+  }
+
   private fun getTestOutput(): Literal? {
     return env.get("test_output")
   }
