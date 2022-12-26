@@ -48,13 +48,6 @@ interface Stmt {
       visitor.visit(this)
     }
   }
-  /*
-   class For(val initializer: Stmt, val condition: Expr, val increment: Expr, val body: Stmt, val token: Token): Stmt {
-     override fun accept(visitor: Visitor) {
-       visitor.visit(this)
-     }
-   }
-  */
 }
 
 interface Expr {
