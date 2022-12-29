@@ -17,7 +17,7 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
     stmt.accept(this)
   }
 
-  private fun evaluate(expr: Expr): Literal {
+  fun evaluate(expr: Expr): LoxObject {
     return expr.accept(this)
   }
 
@@ -78,16 +78,16 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
     throw RuntimeError(binary.operator, "Expected two numbers.")
   }
 
-  override fun visit(grouping: Grouping): Literal {
+  override fun visit(grouping: Grouping): LoxObject {
     return grouping.expr.accept(this)
   }
 
-  override fun visit(variable: Variable): Literal {
+  override fun visit(variable: Variable): LoxObject {
     return env.get(variable.identifier)
         ?: throw RuntimeError(variable.token, "Cannot resolve identifier ${variable.identifier}")
   }
 
-  override fun visit(assign: Expr.Assign): Literal {
+  override fun visit(assign: Expr.Assign): LoxObject {
     val value = evaluate(assign.right)
     val success = env.assign(assign.variable.identifier, value)
     if (!success) {
@@ -96,7 +96,7 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
     return value
   }
 
-  override fun visit(logicalExpression: LogicalExpression): Literal {
+  override fun visit(logicalExpression: LogicalExpression): LoxObject {
     val left = evaluate(logicalExpression.left)
     when (Pair(left, logicalExpression.type.type)) {
       Pair(LoxBoolean(true), TokenType.OR) -> return left
@@ -105,6 +105,19 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
       Pair(LoxBoolean(false), TokenType.AND) -> return left
       else -> throw RuntimeError(logicalExpression.type, "Expected boolean on LHS of and/or.")
     }
+  }
+
+  override fun visit(call: Call): LoxObject {
+    val callable = evaluate(call.callable)
+    if (callable !is LoxCallable) {
+      throw RuntimeError(call.paren, "Can only call functions and classes.")
+    }
+
+    if (call.args.size != callable.arity()) {
+      throw RuntimeError(
+          call.paren, "Expected ${callable.arity()} arguments but got ${call.args.size}.")
+    }
+    return callable.call(this, call.args)
   }
 
   override fun visit(print: Stmt.Print) {
@@ -120,14 +133,18 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
   }
 
   override fun visit(block: Stmt.Block) {
-    val enclosingEnv = env
+    executeBlock(block)
+  }
+
+  fun executeBlock(block: Stmt.Block, executionEnvironment: Environment = Environment(env)) {
+    val oldEnv = env
+    env = executionEnvironment
     try {
-      env = Environment(enclosingEnv)
       for (statement in block.statements) {
         execute(statement)
       }
     } finally {
-      env = enclosingEnv
+      env = oldEnv
     }
   }
 
@@ -147,8 +164,16 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
     }
   }
 
-  private fun makeCheckTruthiness(token: Token): (Literal) -> Boolean {
-    fun checkTruthiness(literal: Literal): Boolean {
+  override fun visit(returnStmt: Stmt.Return) {
+    throw Stmt.Return.ReturnValue(evaluate(returnStmt.value))
+  }
+
+  override fun visit(function: Stmt.Function) {
+    env.define(function.name, LoxFunction(function, env))
+  }
+
+  private fun makeCheckTruthiness(token: Token): (LoxObject) -> Boolean {
+    fun checkTruthiness(literal: LoxObject): Boolean {
       return when (literal) {
         LoxBoolean(true) -> true
         LoxBoolean(false) -> false
