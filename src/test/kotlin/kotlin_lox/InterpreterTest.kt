@@ -370,14 +370,105 @@ class InterpreterTest {
     assertEquals(LoxNumber(45.0), getTestOutput())
   }
 
-  private fun getTestOutput(): Literal? {
+  @Test
+  fun testFunction() {
+    interpret(
+        """
+      fun hello() {
+        return 5;
+      }
+      var test_output = hello();
+    """
+            .trimIndent())
+
+    assertEquals(LoxNumber(5.0), getTestOutput())
+  }
+
+  @Test
+  fun testUnaryFunction() {
+    interpret(
+        """
+      fun hello(x) {
+        return x * x;
+      }
+      var test_output = hello(5);
+    """
+            .trimIndent())
+
+    assertEquals(LoxNumber(25.0), getTestOutput())
+  }
+
+  @Test
+  fun testBinaryFunction() {
+    interpret(
+      """
+      fun power(x, y) {
+        var res = 1.0;
+        for (var i = 0; i < y; i = i + 1) {
+          res = res * x;
+        }
+        return res;
+      }
+      var test_output = power(3, 4);
+    """
+        .trimIndent())
+
+    assertEquals(LoxNumber(81.0), getTestOutput())
+  }
+
+  @Test
+  fun testReturnNothing() {
+    interpret(
+        """
+      fun hello() {
+        var x = 0;
+        while (true) {
+          if (x == 100) {
+            return;
+          }
+          x = x + 1;
+        }
+      }
+      var test_output;
+      if (hello() == nil) {
+        test_output = "success";
+      }
+      
+    """
+            .trimIndent())
+
+    assertEquals(LoxString("success"), getTestOutput())
+  }
+
+  @Test
+  fun testClosure() {
+    interpret(
+        """
+      fun makeCatter() {
+        var a = "";
+        fun catter() {
+          return a = a + "a";
+        }
+        return catter;
+      }
+      var catter = makeCatter();
+      catter();
+      catter();
+      var test_output = catter();
+    """
+            .trimIndent())
+
+    assertEquals(LoxString("aaa"), getTestOutput())
+  }
+
+  private fun getTestOutput(): LoxObject? {
     return env.get("test_output")
   }
   private fun interpret(code: String) {
     interpreter.interpret(Parser((Scanner(code).scanTokens())).parse())
   }
 
-  private fun eval(expression: String): Literal? {
+  private fun eval(expression: String): LoxObject? {
     val tokens = Scanner("var test_output = $expression;").scanTokens()
     val statements = Parser(tokens).parse()
     interpreter.interpret(statements)

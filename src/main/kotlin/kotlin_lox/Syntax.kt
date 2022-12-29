@@ -8,24 +8,26 @@ interface Stmt {
     fun visit(block: Block)
     fun visit(ifStmt: If)
     fun visit(whileStmt: While)
+    fun visit(returnStmt: Return)
+    fun visit(function: Function)
   }
 
   fun accept(visitor: Visitor)
 
   class Print(val expr: Expr) : Stmt {
-    override fun accept(visitor: Stmt.Visitor) {
+    override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
   }
 
   class Expression(val expr: Expr) : Stmt {
-    override fun accept(visitor: Stmt.Visitor) {
+    override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
   }
 
   class Var(val identifier: String, val expr: Expr) : Stmt {
-    override fun accept(visitor: Stmt.Visitor) {
+    override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
   }
@@ -48,6 +50,22 @@ interface Stmt {
       visitor.visit(this)
     }
   }
+
+  class Return(val value: Expr) : Stmt {
+    override fun accept(visitor: Visitor) {
+      visitor.visit(this)
+    }
+
+    class ReturnValue(val value: LoxObject) : Exception()
+  }
+
+  class Function(val name: String, val body: Stmt.Block, val params: List<Variable>) : Stmt {
+    override fun accept(visitor: Stmt.Visitor) {
+      return visitor.visit(this)
+    }
+
+    override fun toString() = "Fn<$name>"
+  }
 }
 
 interface Expr {
@@ -58,25 +76,27 @@ interface Expr {
 
     fun visit(binary: Binary): Literal
 
-    fun visit(grouping: Grouping): Literal
+    fun visit(grouping: Grouping): LoxObject
 
-    fun visit(variable: Variable): Literal
+    fun visit(variable: Variable): LoxObject
 
-    fun visit(assign: Assign): Literal
+    fun visit(assign: Assign): LoxObject
 
-    fun visit(logicalExpression: LogicalExpression): Literal
+    fun visit(logicalExpression: LogicalExpression): LoxObject
+
+    fun visit(call: Call): LoxObject
   }
 
-  fun accept(visitor: Visitor): Literal
+  fun accept(visitor: Visitor): LoxObject
 
   class Assign(val variable: Variable, val right: Expr) : Expr {
-    override fun accept(visitor: Visitor): Literal {
+    override fun accept(visitor: Visitor): LoxObject {
       return visitor.visit(this)
     }
   }
 }
 
-sealed class Literal : Expr {
+sealed class Literal : Expr, LoxObject {
   override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
@@ -128,13 +148,13 @@ data class Binary(val operator: Token, val left: Expr, val right: Expr) : Expr {
 }
 
 data class Grouping(val expr: Expr) : Expr {
-  override fun accept(visitor: Expr.Visitor): Literal {
+  override fun accept(visitor: Expr.Visitor): LoxObject {
     return visitor.visit(this)
   }
 }
 
 data class Variable(val token: Token) : Expr {
-  override fun accept(visitor: Expr.Visitor): Literal {
+  override fun accept(visitor: Expr.Visitor): LoxObject {
     return visitor.visit(this)
   }
 
@@ -142,8 +162,13 @@ data class Variable(val token: Token) : Expr {
 }
 
 class LogicalExpression(val left: Expr, val type: Token, val right: Expr) : Expr {
+  override fun accept(visitor: Expr.Visitor): LoxObject {
+    return visitor.visit(this)
+  }
+}
 
-  override fun accept(visitor: Expr.Visitor): Literal {
+class Call(val callable: Expr, val paren: Token, val args: List<Expr>) : Expr {
+  override fun accept(visitor: Expr.Visitor): LoxObject {
     return visitor.visit(this)
   }
 }

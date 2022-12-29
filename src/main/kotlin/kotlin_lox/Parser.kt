@@ -77,6 +77,9 @@ class Parser(private val tokens: List<Token>) {
     if (match(TokenType.VAR)) {
       return varDeclaration()
     }
+    if (match(TokenType.FUN)) {
+      return function("function")
+    }
     return statement()
   }
 
@@ -96,8 +99,40 @@ class Parser(private val tokens: List<Token>) {
     if (match(TokenType.FOR)) {
       return forLoop()
     }
+    if (match(TokenType.RETURN)) {
+      return returnStatement()
+    }
 
     return expressionStatement()
+  }
+
+  private fun function(kind: String): Stmt {
+    val functionName = consume(TokenType.IDENTIFIER, "Expect name.").lexeme
+
+    consume(TokenType.LEFT_PAREN, "Expect '(' after $kind name.")
+    val params = mutableListOf<Variable>()
+
+    if (!check(TokenType.RIGHT_PAREN)) {
+      do {
+        val param = consume(TokenType.IDENTIFIER, "Expect parameter name.")
+        params.add(Variable(param))
+      } while (match(TokenType.COMMA))
+    }
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+    consume(TokenType.LEFT_BRACE, "Expect '{' before $kind body.")
+    val body = block()
+    return Stmt.Function(functionName, body, params)
+  }
+
+  private fun returnStatement(): Stmt {
+    val expr =
+        if (!check(TokenType.SEMICOLON)) {
+          expression()
+        } else {
+          LoxNil
+        }
+    consume(TokenType.SEMICOLON, "Expect ';' after return value.")
+    return Stmt.Return(expr)
   }
 
   private fun expressionStatement(): Stmt.Expression {
@@ -270,7 +305,32 @@ class Parser(private val tokens: List<Token>) {
     if (match(TokenType.BANG, TokenType.MINUS)) {
       return Unary(previous(), unary())
     }
-    return primary()
+    return functionCall(primary())
+  }
+
+  private fun functionCall(expr: Expr): Expr {
+    if (match(TokenType.LEFT_PAREN)) {
+      val args = parseArgs()
+      val paren = consume(TokenType.RIGHT_PAREN, "Expect ')' to close function call.;")
+      val fn = Call(expr, paren, args)
+      return functionCall(fn)
+    }
+    return expr
+  }
+
+  private fun parseArgs(): List<Expr> {
+    if (check(TokenType.RIGHT_PAREN)) {
+      return emptyList()
+    }
+    val args = mutableListOf<Expr>()
+    do {
+      args.add(expression())
+    } while (match(TokenType.COMMA))
+    if (args.size >= 255) {
+      error(previous(), "Can't have more than 255 arguments.")
+      return args.subList(0, 255)
+    }
+    return args
   }
 
   private fun primary(): Expr {
