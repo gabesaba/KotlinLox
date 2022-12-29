@@ -71,19 +71,12 @@ interface Stmt {
 interface Expr {
   interface Visitor {
     fun visit(expr: Literal): Literal
-
     fun visit(unary: Unary): Literal
-
     fun visit(binary: Binary): Literal
-
     fun visit(grouping: Grouping): LoxObject
-
     fun visit(variable: Variable): LoxObject
-
     fun visit(assign: Assign): LoxObject
-
     fun visit(logicalExpression: LogicalExpression): LoxObject
-
     fun visit(call: Call): LoxObject
   }
 
