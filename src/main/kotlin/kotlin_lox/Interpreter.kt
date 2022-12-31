@@ -1,6 +1,9 @@
 package kotlin_lox
 
 class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, Stmt.Visitor {
+  init {
+    env.define("clock", Clock)
+  }
 
   sealed interface InterpretResult {
     object Success : InterpretResult
