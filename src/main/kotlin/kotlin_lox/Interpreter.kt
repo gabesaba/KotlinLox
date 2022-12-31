@@ -129,6 +129,7 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
   }
 
   override fun visit(v: Stmt.Var) {
+    env = env.split()
     env.define(v.identifier, evaluate(v.expr))
   }
 
