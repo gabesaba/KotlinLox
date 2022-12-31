@@ -1,13 +1,19 @@
 package kotlin_lox
 
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class InterpreterTest {
 
   private val env = Environment()
+  private val testOutput = TestOutput()
   private val interpreter = Interpreter(env)
+
+  @BeforeTest
+  fun defineSetTestOutput() {
+    env.define("setTestOutput", testOutput)
+  }
 
   @Test
   fun testAddition() {
@@ -95,8 +101,8 @@ class InterpreterTest {
 
   @Test
   fun testNegationFailsWithNonNumber() {
-    assertNull(eval("- false"))
-    assertNull(eval("- nil"))
+    assertEquals(LoxNil, eval("- false"))
+    assertEquals(LoxNil, eval("- nil"))
   }
 
   @Test
@@ -107,8 +113,8 @@ class InterpreterTest {
 
   @Test
   fun testNotFailsWithNonBoolean() {
-    assertNull(eval("!10"))
-    assertNull(eval("!nil"))
+    assertEquals(LoxNil, eval("!10"))
+    assertEquals(LoxNil, eval("!nil"))
   }
 
   @Test
@@ -177,14 +183,11 @@ class InterpreterTest {
 
   @Test
   fun testIfStatement() {
-    interpret(
-        """
-      var test_output = 0;
+    interpret("""
       if (true) {
-        test_output = 1;
+        setTestOutput(1);
       }
       """)
-
     assertEquals(LoxNumber(1.0), getTestOutput())
   }
 
@@ -192,12 +195,12 @@ class InterpreterTest {
   fun testIfStatementNotExecuted() {
     interpret(
         """
-      var test_output = 0;
+      var a = 0;
       if (false) {
-        test_output = 1;
+        a = 1;
       }
+      setTestOutput(a);
       """)
-
     assertEquals(LoxNumber(0.0), getTestOutput())
   }
 
@@ -205,14 +208,14 @@ class InterpreterTest {
   fun testIfStatementWithElseBranch() {
     interpret(
         """
-      var test_output = 0;
+      var a = 0;
       if (true) {
-        test_output = 1;
+        a = 1;
       } else {
-        test_output = 2;
+        a = 2;
       }
+      setTestOutput(a);
       """)
-
     assertEquals(LoxNumber(1.0), getTestOutput())
   }
 
@@ -220,14 +223,14 @@ class InterpreterTest {
   fun testElseBranchExecuted() {
     interpret(
         """
-      var test_output = 0;
+      var a = 0;
       if (false) {
-        test_output = 1;
+        a = 1;
       } else {
-        test_output = 2;
+        a = 2;
       }
+      setTestOutput(a);
       """)
-
     assertEquals(LoxNumber(2.0), getTestOutput())
   }
 
@@ -235,11 +238,12 @@ class InterpreterTest {
   fun testShortCircuitAnd() {
     interpret(
         """
-      var test_output = false;
-      false and test_output = true;
+      var a = false;
+      false and a = true;
+      
+      setTestOutput(a);
     """
             .trimIndent())
-
     assertEquals(LoxBoolean(false), getTestOutput())
   }
 
@@ -247,8 +251,9 @@ class InterpreterTest {
   fun testSideEffectAnd() {
     interpret(
         """
-      var test_output = false;
-      true and test_output = true;
+      var a = false;
+      true and a = true;
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -259,8 +264,9 @@ class InterpreterTest {
   fun testShortCircuitOr() {
     interpret(
         """
-      var test_output = false;
-      true or test_output = true;
+      var a = false;
+      true or a = true;
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -271,8 +277,9 @@ class InterpreterTest {
   fun testSideEffectOr() {
     interpret(
         """
-      var test_output = false;
-      false or test_output = true;
+      var a = false;
+      false or a = true;
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -283,10 +290,11 @@ class InterpreterTest {
   fun testWhile() {
     interpret(
         """
-      var test_output = 0;
-      while (test_output < 10) {
-        test_output = test_output + 1;
+      var a = 0;
+      while (a < 10) {
+        a = a + 1;
       }
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -297,10 +305,11 @@ class InterpreterTest {
   fun testWhileDoesntExecute() {
     interpret(
         """
-      var test_output = false;
+      var a = false;
       while (false) {
-        test_output = true;
+        a = true;
       }
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -311,11 +320,12 @@ class InterpreterTest {
   fun testForLoop() {
     interpret(
         """
-      var test_output = 0;
+      var a = 0;
 
       for (var i = 0; i < 10; i = i + 1) {
-        test_output = test_output + i;
+        a = a + i;
       }
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -326,12 +336,13 @@ class InterpreterTest {
   fun testForLoopWithoutInitializer() {
     interpret(
         """
-      var test_output = 0;
+      var a = 0;
       var i = 0;
 
       for (; i < 10; i = i + 1) {
-        test_output = test_output + i;
+        a = a + i;
       }
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -342,12 +353,13 @@ class InterpreterTest {
   fun testForLoopWithoutIncrement() {
     interpret(
         """
-      var test_output = 0;
+      var a = 0;
 
       for (var i = 0; i < 10;) {
-        test_output = test_output + i;
+        a = a + i;
         i = i + 1;
       }
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -358,12 +370,13 @@ class InterpreterTest {
   fun testForLoopInitializer() {
     interpret(
         """
-      var test_output = 0;
+      var a = 0;
       var i = "not a number!";
 
       for (i = 0; i < 10; i = i + 1) {
-        test_output = test_output + i;
+        a = a + i;
       }
+      setTestOutput(a);
     """
             .trimIndent())
 
@@ -377,7 +390,7 @@ class InterpreterTest {
       fun hello() {
         return 5;
       }
-      var test_output = hello();
+      setTestOutput(hello());
     """
             .trimIndent())
 
@@ -391,7 +404,7 @@ class InterpreterTest {
       fun hello(x) {
         return x * x;
       }
-      var test_output = hello(5);
+      setTestOutput(hello(5));
     """
             .trimIndent())
 
@@ -401,7 +414,7 @@ class InterpreterTest {
   @Test
   fun testBinaryFunction() {
     interpret(
-      """
+        """
       fun power(x, y) {
         var res = 1.0;
         for (var i = 0; i < y; i = i + 1) {
@@ -409,9 +422,9 @@ class InterpreterTest {
         }
         return res;
       }
-      var test_output = power(3, 4);
+      setTestOutput(power(3, 4));
     """
-        .trimIndent())
+            .trimIndent())
 
     assertEquals(LoxNumber(81.0), getTestOutput())
   }
@@ -429,9 +442,9 @@ class InterpreterTest {
           x = x + 1;
         }
       }
-      var test_output;
+
       if (hello() == nil) {
-        test_output = "success";
+        setTestOutput("success");
       }
       
     """
@@ -454,24 +467,22 @@ class InterpreterTest {
       var catter = makeCatter();
       catter();
       catter();
-      var test_output = catter();
+      setTestOutput(catter());
     """
             .trimIndent())
 
     assertEquals(LoxString("aaa"), getTestOutput())
   }
 
-  private fun getTestOutput(): LoxObject? {
-    return env.get("test_output")
+  private fun getTestOutput(): LoxObject {
+    return testOutput.output
   }
   private fun interpret(code: String) {
     interpreter.interpret(Parser((Scanner(code).scanTokens())).parse())
   }
 
-  private fun eval(expression: String): LoxObject? {
-    val tokens = Scanner("var test_output = $expression;").scanTokens()
-    val statements = Parser(tokens).parse()
-    interpreter.interpret(statements)
-    return getTestOutput()
+  private fun eval(code: String): LoxObject {
+    interpret("setTestOutput($code);")
+    return testOutput.output
   }
 }
