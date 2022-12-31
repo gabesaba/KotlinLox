@@ -26,7 +26,10 @@ interface Stmt {
     }
   }
 
-  class Var(val identifier: String, val expr: Expr) : Stmt {
+  class Var(token: Token, val expr: Expr?) : Stmt, Debuggable {
+    override val debugInfo = DebugInfo(token)
+    val variable = Variable(token)
+
     override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
@@ -55,7 +58,9 @@ interface Stmt {
     }
   }
 
-  class Return(val value: Expr) : Stmt {
+  class Return(val value: Expr, token: Token) : Stmt, Debuggable {
+    override val debugInfo = DebugInfo(token)
+
     override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
@@ -63,8 +68,13 @@ interface Stmt {
     class ReturnValue(val value: LoxObject) : Exception()
   }
 
-  class Function(val name: String, val body: Block, val params: List<Variable>) : Stmt {
-    override fun accept(visitor: Visitor) {
+  class Function(token: Token, val body: Stmt.Block, val params: List<Variable>) :
+      Stmt, Debuggable {
+    val variable = Variable(token)
+    val name = variable.identifier
+    override val debugInfo = DebugInfo(token)
+
+    override fun accept(visitor: Stmt.Visitor) {
       return visitor.visit(this)
     }
 
@@ -159,6 +169,19 @@ class Variable(token: Token) : Expr, Debuggable {
 
   override fun accept(visitor: Expr.Visitor): LoxObject {
     return visitor.visit(this)
+  }
+
+  override fun toString(): String {
+    return "var '$identifier'"
+  }
+
+  override fun equals(other: Any?): Boolean {
+    if (other !is Variable) return false
+    return this.identifier == other.identifier
+  }
+
+  override fun hashCode(): Int {
+    return identifier.hashCode()
   }
 
   val identifier = token.lexeme

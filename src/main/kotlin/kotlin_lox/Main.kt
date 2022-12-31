@@ -8,6 +8,7 @@ import kotlin.system.exitProcess
 private var hadError = false
 private var hadRuntimeError = false
 private val interpreter = Interpreter()
+private val resolver = Resolver()
 
 fun main(args: Array<String>) {
   when (args.size) {
@@ -43,6 +44,11 @@ fun run(source: String) {
 
   val statements = parser.parse()
 
+  if (hadError) return
+
+  resolver.resolve(statements)
+
+  // Stop if there was a resolution error.
   if (hadError) return
 
   interpreter.interpret(statements)

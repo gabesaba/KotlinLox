@@ -12,7 +12,8 @@ class InterpreterTest {
 
   @BeforeTest
   fun defineSetTestOutput() {
-    env.define("setTestOutput", testOutput)
+    env.define("setTestOutput")
+    env.assign("setTestOutput", testOutput)
   }
 
   @Test
@@ -476,13 +477,15 @@ class InterpreterTest {
 
   @Test
   fun testLexicalScope() {
-    interpret("""
+    interpret(
+        """
     var a = "global";
     {
       fun run() {
         setTestOutput(a);
       }
       var a = "block";
+      print a;
       run();
     }
     """)
@@ -494,7 +497,9 @@ class InterpreterTest {
     return testOutput.output
   }
   private fun interpret(code: String) {
-    interpreter.interpret(Parser((Scanner(code).scanTokens())).parse())
+    val tree = Parser((Scanner(code).scanTokens())).parse()
+    assertEquals(0, Resolver().resolve(tree).size)
+    interpreter.interpret(tree)
   }
 
   private fun eval(code: String): LoxObject {
