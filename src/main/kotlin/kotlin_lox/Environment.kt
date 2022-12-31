@@ -12,6 +12,12 @@ class Environment(private val enclosing: Environment? = null) {
     values[key] = value
   }
 
+  fun split(): Environment {
+    val newEnvironment = Environment(enclosing)
+    newEnvironment.values.putAll(values)
+    return newEnvironment
+  }
+
   // Assign a value to a defined variable in the first enclosing scope.
   // Return true if successful, false if the variable hasn't been defined.
   fun assign(key: String, value: LoxObject): Boolean {

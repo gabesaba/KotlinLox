@@ -474,6 +474,22 @@ class InterpreterTest {
     assertEquals(LoxString("aaa"), getTestOutput())
   }
 
+  @Test
+  fun testLexicalScope() {
+    interpret("""
+    var a = "global";
+    {
+      fun run() {
+        setTestOutput(a);
+      }
+      var a = "block";
+      run();
+    }
+    """)
+
+    assertEquals(LoxString("global"), getTestOutput())
+  }
+
   private fun getTestOutput(): LoxObject {
     return testOutput.output
   }
