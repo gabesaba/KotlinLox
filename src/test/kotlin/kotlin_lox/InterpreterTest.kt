@@ -96,8 +96,8 @@ class InterpreterTest {
   @Test
   fun testNegation() {
     assertEquals(eval("- (5 + 5)"), LoxNumber(-10.0))
-    assertEquals(eval("--10"), LoxNumber(10.0))
-    assertEquals(eval("---10"), LoxNumber(-10.0))
+    assertEquals(eval("-(-10)"), LoxNumber(10.0))
+    assertEquals(eval("-(-(-10))"), LoxNumber(-10.0))
   }
 
   @Test
@@ -491,6 +491,51 @@ class InterpreterTest {
     """)
 
     assertEquals(LoxString("global"), getTestOutput())
+  }
+
+  @Test
+  fun testPrefixIncrement() {
+    val program = """
+    var a = 0;
+    ++a;
+    ++a;
+    ++a;
+    setTestOutput(a);
+    """
+
+    interpret(program)
+
+    assertEquals(LoxNumber(3.0), getTestOutput())
+  }
+
+  @Test
+  fun testPrefixDecrement() {
+    val program = """
+    var a = 0;
+    --a;
+    --a;
+    setTestOutput(a);
+    """
+
+    interpret(program)
+
+    assertEquals(LoxNumber(-2.0), getTestOutput())
+  }
+
+  @Test
+  fun testPrefixIncrementForLoop() {
+    val program =
+        """
+                var sum = 0;
+                for (var i = 0; i < 20; ++i) {
+                  sum = sum + i;
+                }
+                setTestOutput(sum);
+            """
+            .trimIndent()
+    interpret(program)
+
+    assertEquals(LoxNumber(190.0), getTestOutput())
   }
 
   private fun getTestOutput(): LoxObject {

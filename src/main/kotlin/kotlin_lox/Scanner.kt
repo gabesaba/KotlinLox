@@ -74,8 +74,8 @@ private fun scanToken(source: SourceIterator): Token? {
         '}' -> TokenType.RIGHT_BRACE
         ',' -> TokenType.COMMA
         '.' -> TokenType.DOT
-        '-' -> TokenType.MINUS
-        '+' -> TokenType.PLUS
+        '-' -> if (source.match('-')) TokenType.MINUS_MINUS else TokenType.MINUS
+        '+' -> if (source.match('+')) TokenType.PLUS_PLUS else TokenType.PLUS
         ';' -> TokenType.SEMICOLON
         '*' -> TokenType.STAR
         '!' -> if (source.match('=')) TokenType.BANG_EQUAL else TokenType.BANG
