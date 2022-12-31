@@ -500,12 +500,12 @@ class InterpreterTest {
     ++a;
     ++a;
     ++a;
-    setTestOutput(a);
+    setTestOutput(++a);
     """
 
     interpret(program)
 
-    assertEquals(LoxNumber(3.0), getTestOutput())
+    assertEquals(LoxNumber(4.0), getTestOutput())
   }
 
   @Test
@@ -514,29 +514,75 @@ class InterpreterTest {
     var a = 0;
     --a;
     --a;
-    setTestOutput(a);
+    setTestOutput(--a);
     """
 
     interpret(program)
 
-    assertEquals(LoxNumber(-2.0), getTestOutput())
+    assertEquals(LoxNumber(-3.0), getTestOutput())
   }
 
   @Test
   fun testPrefixIncrementForLoop() {
     val program =
         """
-                var sum = 0;
-                for (var i = 0; i < 20; ++i) {
-                  sum = sum + i;
+                var res = 0;
+                for (var i = 0; i < 20; res = ++i) {
                 }
-                setTestOutput(sum);
+                setTestOutput(res);
             """
             .trimIndent()
     interpret(program)
 
-    assertEquals(LoxNumber(190.0), getTestOutput())
+    assertEquals(LoxNumber(20.0), getTestOutput())
   }
+
+  @Test
+  fun testPostfixIncrementForLoop() {
+    val program =
+        """
+                var res = 0;
+                for (var i = 0; i < 20; res = i++) {
+                }
+                setTestOutput(res);
+            """
+            .trimIndent()
+    interpret(program)
+
+    assertEquals(LoxNumber(19.0), getTestOutput())
+  }
+
+    @Test
+    fun testPostfixIncrement() {
+        val program =
+            """
+                var a = 0;
+                a++;
+                a++;
+                a++;
+                setTestOutput(a++);
+            """
+                .trimIndent()
+        interpret(program)
+
+        assertEquals(LoxNumber(3.0), getTestOutput())
+    }
+
+    @Test
+    fun testPostfixDecrement() {
+        val program =
+            """
+                var a = 10;
+                a--;
+                a--;
+                a--;
+                setTestOutput(a--);
+            """
+                .trimIndent()
+        interpret(program)
+
+        assertEquals(LoxNumber(7.0), getTestOutput())
+    }
 
   private fun getTestOutput(): LoxObject {
     return testOutput.output

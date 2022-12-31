@@ -143,12 +143,13 @@ fun parsePrimary(token: Token): Literal {
 }
 
 sealed class Unary(operator: Token, val operand: Expr) : Expr, Debuggable {
-  sealed interface NumericUnary
 
-  class Not(operator: Token, operand: Expr): Unary(operator, operand)
-  class Negate(operator: Token, operand: Expr): Unary(operator, operand), NumericUnary
-  class Increment(operator: Token, operand: Expr): Unary(operator, operand), NumericUnary
-  class Decrement(operator: Token, operand: Expr): Unary(operator, operand), NumericUnary
+  class Not(operator: Token, operand: Expr) : Unary(operator, operand)
+  class Negate(operator: Token, operand: Expr) : Unary(operator, operand)
+  class Increment(operator: Token, operand: Expr) : Unary(operator, operand)
+  class Decrement(operator: Token, operand: Expr) : Unary(operator, operand)
+  class PostfixIncrement(operator: Token, operand: Expr) : Unary(operator, operand)
+  class PostfixDecrement(operator: Token, operand: Expr) : Unary(operator, operand)
 
   override val debugInfo = DebugInfo(operator)
 
