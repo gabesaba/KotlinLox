@@ -59,8 +59,8 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
     val binaryDoubleFunction =
         when (binary.operator.type) {
           TokenType.PLUS -> {
-            if (left is LoxString && right is LoxString) {
-              return convertString(String::plus)(left, right)
+            if (left is LoxString) {
+              return convertString(String::plus)(left, LoxString(right.toString()))
             }
             if (left is LoxNumber && right is LoxNumber) {
               return convertDouble(Double::plus)(left, right)
