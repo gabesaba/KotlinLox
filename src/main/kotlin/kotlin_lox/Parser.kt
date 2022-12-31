@@ -295,40 +295,49 @@ class Parser(private val tokens: List<Token>) {
   }
 
   private fun factor(): Expr {
-    var expr = unary()
+    var expr = prefixUnary()
     while (match(TokenType.SLASH, TokenType.STAR)) {
       val operator = previous()
-      val right = unary()
+      val right = prefixUnary()
       expr = Binary(operator, expr, right)
     }
     return expr
   }
 
-  private fun unary(): Expr {
+  private fun prefixUnary(): Expr {
     if (match(TokenType.BANG)) {
-      return Unary.Not(previous(), unary())
+      return Unary.Not(previous(), primary())
     }
     if (match(TokenType.MINUS)) {
-      return Unary.Negate(previous(), unary())
+      return Unary.Negate(previous(), primary())
     }
     if (match(TokenType.PLUS_PLUS)) {
-      return incrementOrDecrement(previous(), unary(), Unary::Increment)
+      return incrementOrDecrement(previous(), primary(), Unary::Increment)
     }
     if (match(TokenType.MINUS_MINUS)) {
-      return incrementOrDecrement(previous(), unary(), Unary::Decrement)
+      return incrementOrDecrement(previous(), primary(), Unary::Decrement)
     }
-    return functionCall(primary())
+    return postFixUnary()
   }
 
   private fun incrementOrDecrement(
-      token: Token,
-      target: Expr,
-      constructor: (Token, Expr) -> Unary
+    token: Token,
+    target: Expr,
+    constructor: (Token, Expr) -> Unary
   ): Expr {
     if (target !is Variable) {
       throw reportParseError(DebugInfo(token), "Expect variable. Got $target.")
     }
     return Expr.Assign(target, constructor(token, target))
+  }
+
+  private fun postFixUnary(): Expr {
+    val expr = primary()
+    return when (peek().type) {
+      TokenType.PLUS_PLUS -> incrementOrDecrement(advance(), functionCall(expr), Unary::PostfixIncrement)
+      TokenType.MINUS_MINUS -> incrementOrDecrement(advance(), functionCall(expr), Unary::PostfixDecrement)
+      else -> functionCall(expr)
+    }
   }
 
   private fun functionCall(expr: Expr): Expr {

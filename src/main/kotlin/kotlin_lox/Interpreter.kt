@@ -49,7 +49,7 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
         }
         LoxBoolean(!operand.value)
       }
-      is Unary.Increment, is Unary.Decrement -> {
+      is Unary.Increment, is Unary.Decrement, is Unary.PostfixIncrement, is Unary.PostfixDecrement -> {
         if (unary.operand !is Variable) {
           throw RuntimeError(unary, "Operand must be a variable.")
         }
@@ -58,8 +58,8 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
           throw RuntimeError(unary, "Expected number.")
         }
         when (unary) {
-          is Unary.Increment -> LoxNumber(operand.value + 1.0)
-          is Unary.Decrement -> LoxNumber(operand.value - 1.0)
+          is Unary.Increment, is Unary.PostfixIncrement -> LoxNumber(operand.value + 1.0)
+          is Unary.Decrement, is Unary.PostfixDecrement -> LoxNumber(operand.value - 1.0)
           else -> throw RuntimeError(unary, "Illegal state.")
         }
       }
@@ -110,12 +110,16 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
   }
 
   override fun visit(assign: Expr.Assign): LoxObject {
-    val value = evaluate(assign.right)
-    val success = env.assign(assign.variable.identifier, value)
+    val assignValue = evaluate(assign.right)
+    val returnValue = when (assign.right) {
+      is Unary.PostfixDecrement, is Unary.PostfixIncrement ->  evaluate(assign.variable)
+      else -> assignValue
+    }
+    val success = env.assign(assign.variable.identifier, assignValue)
     if (!success) {
       throw RuntimeError(assign.variable, "Undefined variable ${assign.variable.identifier}.")
     }
-    return value
+    return returnValue
   }
 
   override fun visit(logicalExpression: LogicalExpression): LoxObject {
