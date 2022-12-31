@@ -38,14 +38,18 @@ interface Stmt {
     }
   }
 
-  class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt, val token: Token) :
-      Stmt {
+  class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt, token: Token) :
+      Stmt, Debuggable {
+    override val debugInfo = DebugInfo(token)
+
     override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
   }
 
-  class While(val condition: Expr, val block: Stmt, val token: Token) : Stmt {
+  class While(val condition: Expr, val block: Stmt, token: Token) : Stmt, Debuggable {
+    override val debugInfo = DebugInfo(token)
+
     override fun accept(visitor: Visitor) {
       visitor.visit(this)
     }
@@ -59,8 +63,8 @@ interface Stmt {
     class ReturnValue(val value: LoxObject) : Exception()
   }
 
-  class Function(val name: String, val body: Stmt.Block, val params: List<Variable>) : Stmt {
-    override fun accept(visitor: Stmt.Visitor) {
+  class Function(val name: String, val body: Block, val params: List<Variable>) : Stmt {
+    override fun accept(visitor: Visitor) {
       return visitor.visit(this)
     }
 
@@ -128,13 +132,17 @@ fun parsePrimary(token: Token): Literal {
   }
 }
 
-data class Unary(val operator: Token, val operand: Expr) : Expr {
+data class Unary(val operator: Token, val operand: Expr) : Expr, Debuggable {
+  override val debugInfo = DebugInfo(operator)
+
   override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
 }
 
-data class Binary(val operator: Token, val left: Expr, val right: Expr) : Expr {
+data class Binary(val operator: Token, val left: Expr, val right: Expr) : Expr, Debuggable {
+  override val debugInfo = DebugInfo(operator)
+
   override fun accept(visitor: Expr.Visitor): Literal {
     return visitor.visit(this)
   }
@@ -146,7 +154,9 @@ data class Grouping(val expr: Expr) : Expr {
   }
 }
 
-data class Variable(val token: Token) : Expr {
+class Variable(token: Token) : Expr, Debuggable {
+  override val debugInfo = DebugInfo(token)
+
   override fun accept(visitor: Expr.Visitor): LoxObject {
     return visitor.visit(this)
   }
@@ -154,13 +164,17 @@ data class Variable(val token: Token) : Expr {
   val identifier = token.lexeme
 }
 
-class LogicalExpression(val left: Expr, val type: Token, val right: Expr) : Expr {
+class LogicalExpression(val left: Expr, val type: Token, val right: Expr) : Expr, Debuggable {
+  override val debugInfo = DebugInfo(type)
+
   override fun accept(visitor: Expr.Visitor): LoxObject {
     return visitor.visit(this)
   }
 }
 
-class Call(val callable: Expr, val paren: Token, val args: List<Expr>) : Expr {
+class Call(val callable: Expr, paren: Token, val args: List<Expr>) : Expr, Debuggable {
+  override val debugInfo = DebugInfo(paren)
+
   override fun accept(visitor: Expr.Visitor): LoxObject {
     return visitor.visit(this)
   }
