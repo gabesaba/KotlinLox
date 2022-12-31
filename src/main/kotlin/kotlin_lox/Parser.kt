@@ -70,7 +70,7 @@ class Parser(private val tokens: List<Token>) {
     if (check(tokenType)) {
       return advance()
     }
-    throw reportParseError(previous(), message)
+    throw reportParseError(DebugInfo(previous()), message)
   }
 
   private fun declaration(): Stmt {
@@ -237,7 +237,7 @@ class Parser(private val tokens: List<Token>) {
       if (value is Variable) {
         return Expr.Assign(value, assignment())
       }
-      error(equals, "Invalid assignment target.")
+      error(DebugInfo(equals), "Invalid assignment target.")
     }
     return value
   }
@@ -327,7 +327,7 @@ class Parser(private val tokens: List<Token>) {
       args.add(expression())
     } while (match(TokenType.COMMA))
     if (args.size >= 255) {
-      error(previous(), "Can't have more than 255 arguments.")
+      error(DebugInfo(previous()), "Can't have more than 255 arguments.")
       return args.subList(0, 255)
     }
     return args
@@ -345,7 +345,7 @@ class Parser(private val tokens: List<Token>) {
     if (match(TokenType.IDENTIFIER)) {
       return Variable(previous())
     }
-    throw reportParseError(peek(), "Expected expression.")
+    throw reportParseError(DebugInfo(peek()), "Expected expression.")
   }
 
   private fun synchronize() {
@@ -353,7 +353,7 @@ class Parser(private val tokens: List<Token>) {
   }
 }
 
-private fun reportParseError(token: Token, message: String): ParseError {
-  error(token, message)
+private fun reportParseError(debugInfo: DebugInfo, message: String): ParseError {
+  error(debugInfo, message)
   return ParseError
 }

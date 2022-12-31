@@ -61,17 +61,17 @@ fun error(line: Int, message: String) {
   report(line, "", message)
 }
 
-fun error(token: Token, message: String) {
-  if (token.type == TokenType.EOF) {
-    report(token.line, " at end", message)
+fun error(debugInfo: DebugInfo, message: String) {
+  if (debugInfo.atEnd) {
+    report(debugInfo.line, " at end", message)
   } else {
-    report(token.line, " at ${token.lexeme}", message)
+    report(debugInfo.line, " at ${debugInfo.lexeme}", message)
   }
 }
 
 fun runtimeError(error: RuntimeError) {
   hadRuntimeError = true
-  error(error.token.line, error.message)
+  error(error.debugInfo.line, error.message)
 }
 
 private fun report(line: Int, where: String, message: String) {
