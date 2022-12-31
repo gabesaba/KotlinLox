@@ -107,7 +107,7 @@ class Parser(private val tokens: List<Token>) {
   }
 
   private fun function(kind: String): Stmt {
-    val functionName = consume(TokenType.IDENTIFIER, "Expect name.").lexeme
+    val functionNameToken = consume(TokenType.IDENTIFIER, "Expect name.")
 
     consume(TokenType.LEFT_PAREN, "Expect '(' after $kind name.")
     val params = mutableListOf<Variable>()
@@ -121,10 +121,11 @@ class Parser(private val tokens: List<Token>) {
     consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
     consume(TokenType.LEFT_BRACE, "Expect '{' before $kind body.")
     val body = block()
-    return Stmt.Function(functionName, body, params)
+    return Stmt.Function(functionNameToken, body, params)
   }
 
   private fun returnStatement(): Stmt {
+    val returnToken = previous()
     val expr =
         if (!check(TokenType.SEMICOLON)) {
           expression()
@@ -132,7 +133,7 @@ class Parser(private val tokens: List<Token>) {
           LoxNil
         }
     consume(TokenType.SEMICOLON, "Expect ';' after return value.")
-    return Stmt.Return(expr)
+    return Stmt.Return(expr, returnToken)
   }
 
   private fun expressionStatement(): Stmt.Expression {
@@ -218,12 +219,14 @@ class Parser(private val tokens: List<Token>) {
 
   private fun varDeclaration(): Stmt.Var {
     val identifier = consume(TokenType.IDENTIFIER, "Expect variable name.")
-    var initializer: Expr = LoxNil
-    if (match(TokenType.EQUAL)) {
-      initializer = expression()
-    }
+    val initializer =
+        if (match(TokenType.EQUAL)) {
+          expression()
+        } else {
+          null
+        }
     consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
-    return Stmt.Var(identifier.lexeme, initializer)
+    return Stmt.Var(identifier, initializer)
   }
 
   private fun expression(): Expr {
