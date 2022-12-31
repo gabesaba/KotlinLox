@@ -2,15 +2,20 @@ package kotlin_lox
 
 class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, Stmt.Visitor {
 
-  fun interpret(statements: List<Stmt>) {
+  sealed interface InterpretResult {
+    object Success : InterpretResult
+    data class Failure(val error: RuntimeError): InterpretResult
+  }
+  fun interpret(statements: List<Stmt>): InterpretResult {
     for (statement in statements) {
       try {
         execute(statement)
       } catch (error: RuntimeError) {
         runtimeError(error)
-        return
+        return InterpretResult.Failure(error)
       }
     }
+    return InterpretResult.Success
   }
 
   private fun execute(stmt: Stmt) {
