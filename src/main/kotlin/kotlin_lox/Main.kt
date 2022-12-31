@@ -24,7 +24,7 @@ fun interpretFile(fileName: String) {
   val file = Path(fileName)
   if (file.notExists()) {
     println("File doesn't exist...")
-    exitProcess(1)
+    exitProcess(66)
   }
   run(file.readText())
 
