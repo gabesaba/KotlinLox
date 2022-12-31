@@ -305,10 +305,30 @@ class Parser(private val tokens: List<Token>) {
   }
 
   private fun unary(): Expr {
-    if (match(TokenType.BANG, TokenType.MINUS)) {
-      return Unary(previous(), unary())
+    if (match(TokenType.BANG)) {
+      return Unary.Not(previous(), unary())
+    }
+    if (match(TokenType.MINUS)) {
+      return Unary.Negate(previous(), unary())
+    }
+    if (match(TokenType.PLUS_PLUS)) {
+      return incrementOrDecrement(previous(), unary(), Unary::Increment)
+    }
+    if (match(TokenType.MINUS_MINUS)) {
+      return incrementOrDecrement(previous(), unary(), Unary::Decrement)
     }
     return functionCall(primary())
+  }
+
+  private fun incrementOrDecrement(
+      token: Token,
+      target: Expr,
+      constructor: (Token, Expr) -> Unary
+  ): Expr {
+    if (target !is Variable) {
+      throw reportParseError(DebugInfo(token), "Expect variable. Got $target.")
+    }
+    return Expr.Assign(target, constructor(token, target))
   }
 
   private fun functionCall(expr: Expr): Expr {

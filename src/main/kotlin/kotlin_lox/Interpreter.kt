@@ -34,21 +34,35 @@ class Interpreter(private var env: Environment = Environment()) : Expr.Visitor, 
   }
 
   override fun visit(unary: Unary): Literal {
-    val operand = unary.operand.accept(this)
-    when (unary.operator.type) {
-      TokenType.MINUS -> {
+    return when (unary) {
+      is Unary.Negate -> {
+        val operand = unary.operand.accept(this)
         if (operand !is LoxNumber) {
           throw RuntimeError(unary, "Expected number.")
         }
-        return LoxNumber(-operand.value)
+        LoxNumber(-operand.value)
       }
-      TokenType.BANG -> {
+      is Unary.Not -> {
+        val operand = unary.operand.accept(this)
         if (operand !is LoxBoolean) {
           throw RuntimeError(unary, "Expected boolean.")
         }
-        return LoxBoolean(!operand.value)
+        LoxBoolean(!operand.value)
       }
-      else -> throw RuntimeError(unary, "Unexpected unary operator.")
+      is Unary.Increment, is Unary.Decrement -> {
+        if (unary.operand !is Variable) {
+          throw RuntimeError(unary, "Operand must be a variable.")
+        }
+        val operand = unary.operand.accept(this)
+        if (operand !is LoxNumber) {
+          throw RuntimeError(unary, "Expected number.")
+        }
+        when (unary) {
+          is Unary.Increment -> LoxNumber(operand.value + 1.0)
+          is Unary.Decrement -> LoxNumber(operand.value - 1.0)
+          else -> throw RuntimeError(unary, "Illegal state.")
+        }
+      }
     }
   }
 
